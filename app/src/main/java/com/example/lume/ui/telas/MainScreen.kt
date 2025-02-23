@@ -4,11 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,11 +15,17 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.lume.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen() {
+fun MainScreen(
+    onNavigateToList: () -> Unit,
+    onNavigateToConsumption: () -> Unit,
+    navController: NavController
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -35,7 +37,9 @@ fun HomeScreen() {
         Spacer(modifier = Modifier.height(16.dp))
         SearchBar()
         Spacer(modifier = Modifier.height(24.dp))
-        RegisterButton()
+        RegisterButton(navController)
+        Spacer(modifier = Modifier.weight(1f))
+        ListConsumptionButton(navController)
         Spacer(modifier = Modifier.weight(1f))
         Footer()
     }
@@ -66,10 +70,7 @@ fun SearchBar() {
         value = searchText,
         onValueChange = { searchText = it },
         placeholder = { Text("Pesquisar por nome, categoria...") },
-        leadingIcon = {
-            Icon(imageVector = Icons.Default.Search,
-                contentDescription = "Search")
-        },
+        leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = "Search") },
         trailingIcon = {
             if (searchText.isNotEmpty()) {
                 IconButton(onClick = { searchText = "" }) {
@@ -86,9 +87,9 @@ fun SearchBar() {
 }
 
 @Composable
-fun RegisterButton() {
+fun RegisterButton(navController: NavController) {
     Button(
-        onClick = {},
+        onClick = { navController.navigate("consumption") },
         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0F1A2C)),
         modifier = Modifier
             .fillMaxWidth(0.85f)
@@ -106,6 +107,32 @@ fun RegisterButton() {
             Column {
                 Text("Registrar novo consumo", color = Color.White, fontSize = 18.sp)
                 Text("Filmes, séries, livros, podcasts...", color = Color(0xFFFFD700), fontSize = 12.sp)
+            }
+        }
+    }
+}
+
+@Composable
+fun ListConsumptionButton(navController: NavController) {
+    Button(
+        onClick = { navController.navigate("list") },
+        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0F1A2C)),
+        modifier = Modifier
+            .fillMaxWidth(0.85f)
+            .height(80.dp),
+        shape = MaterialTheme.shapes.medium
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = Icons.Default.List,
+                contentDescription = "List",
+                tint = Color(0xFFFFD700),
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Column {
+                Text("Listar consumo", color = Color.White, fontSize = 18.sp)
+                Text("Veja seus consumos registrados", color = Color(0xFFFFD700), fontSize = 12.sp)
             }
         }
     }
@@ -157,9 +184,10 @@ fun Footer() {
 @Preview(showBackground = true)
 @Composable
 fun MainScreenPreview() {
-    HomeScreen()
-    Topo()
-    SearchBar()
-    BarraNavegacao()
-
+    val navController = rememberNavController()
+    MainScreen(
+        onNavigateToList = { /* Navegação de exemplo */ },
+        onNavigateToConsumption = { /* Navegação de exemplo */ },
+        navController = navController
+    )
 }

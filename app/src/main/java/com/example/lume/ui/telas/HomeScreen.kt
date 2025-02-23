@@ -54,16 +54,6 @@ fun HomeScreen(onNavigateToLogin: () -> Unit, onNavigateToRegister: () -> Unit) 
                     Text("Entrar")
                 }
 
-                Button(
-                    onClick = onNavigateToRegister,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF0F223B), // Fundo azul-escuro
-                        contentColor = Color(0xFFB89130)    // Texto dourado
-                    ),
-                    border = BorderStroke(2.dp, Color(0xFFB89130)) // Borda dourada
-                ) {
-                    Text("Cadastrar")
-                }
             }
         }
     }

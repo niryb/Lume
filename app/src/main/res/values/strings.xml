@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Lume</string>
+    <string name="bottom_navigation_profile" />
+    <string name="bottom_navigation_home" />
 </resources>
