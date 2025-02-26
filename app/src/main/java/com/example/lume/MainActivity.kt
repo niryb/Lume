@@ -7,11 +7,14 @@ import androidx.activity.enableEdgeToEdge
 import com.example.lume.ui.telas.AppNavigation
 import com.example.lume.ui.telas.AppNavigation
 import com.example.lume.ui.theme.LumeTheme
+import com.google.firebase.Firebase
+import com.google.firebase.FirebaseApp
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        FirebaseApp.initializeApp(this)
         setContent {
             LumeTheme {
                 AppNavigation()
@@ -19,3 +22,4 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+

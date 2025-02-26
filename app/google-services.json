@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "292434769142",
+    "project_id": "lume-7c796",
+    "storage_bucket": "lume-7c796.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:292434769142:android:40a06b7bf0fd055b0c28d7",
+        "android_client_info": {
+          "package_name": "com.example.lume"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBr2gdtE-pqq7eD03TJIamSMe3tMo_gSHs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

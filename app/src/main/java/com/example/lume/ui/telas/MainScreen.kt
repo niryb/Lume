@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.lume.R
+import com.example.lume.ui.theme.NightBlack
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,22 +27,26 @@ fun MainScreen(
     onNavigateToConsumption: () -> Unit,
     navController: NavController
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF5E1BE)),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        BarraNavegacao()
-        Topo()
-        Spacer(modifier = Modifier.height(16.dp))
-        SearchBar()
-        Spacer(modifier = Modifier.height(24.dp))
-        RegisterButton(navController)
-        Spacer(modifier = Modifier.weight(1f))
-        ListConsumptionButton(navController)
-        Spacer(modifier = Modifier.weight(1f))
-        Footer()
+    Scaffold(
+        topBar = { BarraNavegacao() },
+        bottomBar = { Footer() },
+        containerColor = Color(0xFFF5E1BE)
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Topo()
+            /*Spacer(modifier = Modifier.height(16.dp))
+            SearchBar()*/
+            Spacer(modifier = Modifier.height(24.dp))
+            RegisterButton(navController)
+            Spacer(modifier = Modifier.height(16.dp))
+            ListConsumptionButton(navController)
+        }
     }
 }
 
@@ -62,7 +67,7 @@ fun Topo() {
     }
 }
 
-@Composable
+/*@Composable
 fun SearchBar() {
     var searchText by remember { mutableStateOf("") }
 
@@ -84,7 +89,7 @@ fun SearchBar() {
             .fillMaxWidth(0.9f)
             .height(60.dp)
     )
-}
+}*/
 
 @Composable
 fun RegisterButton(navController: NavController) {
@@ -96,18 +101,11 @@ fun RegisterButton(navController: NavController) {
             .height(80.dp),
         shape = MaterialTheme.shapes.medium
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = "Add",
-                tint = Color(0xFFFFD700),
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Column {
-                Text("Registrar novo consumo", color = Color.White, fontSize = 18.sp)
-                Text("Filmes, séries, livros, podcasts...", color = Color(0xFFFFD700), fontSize = 12.sp)
-            }
+        Icon(imageVector = Icons.Default.Add, contentDescription = "Add", tint = Color(0xFFFFD700))
+        Spacer(modifier = Modifier.width(30.dp))
+        Column {
+            Text("Registrar novo consumo", color = Color.White, fontSize = 18.sp)
+            Text("Filmes, séries, livros, podcasts...", color = Color(0xFFFFD700), fontSize = 12.sp)
         }
     }
 }
@@ -122,18 +120,11 @@ fun ListConsumptionButton(navController: NavController) {
             .height(80.dp),
         shape = MaterialTheme.shapes.medium
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = Icons.Default.List,
-                contentDescription = "List",
-                tint = Color(0xFFFFD700),
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Column {
-                Text("Listar consumo", color = Color.White, fontSize = 18.sp)
-                Text("Veja seus consumos registrados", color = Color(0xFFFFD700), fontSize = 12.sp)
-            }
+        Icon(imageVector = Icons.Default.List, contentDescription = "List", tint = Color(0xFFFFD700))
+        Spacer(modifier = Modifier.width(30.dp))
+        Column {
+            Text("Meu diário de consumo", color = Color.White, fontSize = 18.sp)
+            Text("Veja seus consumos registrados", color = Color(0xFFFFD700), fontSize = 12.sp)
         }
     }
 }
@@ -142,21 +133,22 @@ fun ListConsumptionButton(navController: NavController) {
 @Composable
 fun BarraNavegacao(modifier: Modifier = Modifier) {
     TopAppBar(
-        title = { Text(text = stringResource(R.string.app_name)) },
+        title = { Text (text = stringResource(R.string.app_name), color = NightBlack) },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = Color(0xFFF5E1BE)
         ),
         actions = {
-            IconButton(onClick = { /* Ação para a Home */ }) {
+            /*IconButton(onClick = { *//* Ação para a Home *//* }) {
                 Icon(
                     imageVector = Icons.Default.Home,
                     contentDescription = stringResource(R.string.bottom_navigation_home)
                 )
-            }
+            }*/
             IconButton(onClick = { /* Ação para o Perfil */ }) {
                 Icon(
                     imageVector = Icons.Default.AccountCircle,
-                    contentDescription = stringResource(R.string.bottom_navigation_profile)
+                    contentDescription = stringResource(R.string.bottom_navigation_profile),
+                    tint = NightBlack
                 )
             }
         },

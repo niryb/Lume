@@ -2,33 +2,32 @@ package com.example.lume.ui.telas
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-
-
-data class Consumo(
-    val nome: String,
-    val dataConsumo: String,
-    val genero: String,
-    val descricao: String,
-    val avaliacao: Float,
-    val id: Int? = null // Caso você precise de um identificador único
-)
+import androidx.compose.ui.unit.sp
+import com.example.lume.R
+import com.example.lume.model.dados.Consumo
+import com.example.lume.model.dados.ConsumoDAO
+import com.example.lume.ui.theme.DeepBlue
 
 @Composable
-fun CadastroConsumoScreen(onSave: (Consumo) -> Unit) {
+fun CadastroConsumoScreen(onSave: () -> Unit) {
+    val consumoDAO = remember { ConsumoDAO() } // Instância do DAO
+
     var nome by remember { mutableStateOf("") }
     var dataConsumo by remember { mutableStateOf("") }
+    var tipo by remember { mutableStateOf("") }
     var genero by remember { mutableStateOf("") }
     var descricao by remember { mutableStateOf("") }
-    var avaliacao by remember { mutableStateOf(0f) }
+    var avaliacao by remember { mutableStateOf("") }
+    var comentarioPessoal by remember { mutableStateOf("") }
     var feedbackMessage by remember { mutableStateOf("") }
 
     Column(
@@ -39,77 +38,56 @@ fun CadastroConsumoScreen(onSave: (Consumo) -> Unit) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        OutlinedTextField(
-            value = nome,
-            onValueChange = { nome = it },
-            label = { Text("Nome") },
-            modifier = Modifier.fillMaxWidth()
+        // Título
+        Text(
+            text = "Cadastro Consumo",
+            fontSize = 32.sp,
+            color = DeepBlue,
+            modifier = Modifier.padding(bottom = 32.dp)
         )
 
-        OutlinedTextField(
-            value = dataConsumo,
-            onValueChange = { dataConsumo = it },
-            label = { Text("Data do Consumo") },
-            modifier = Modifier.fillMaxWidth()
-        )
+        OutlinedTextField(value = nome, onValueChange = { nome = it }, label = { Text("Nome") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(value = dataConsumo, onValueChange = { dataConsumo = it }, label = { Text("Data do Consumo") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(value = tipo, onValueChange = { tipo = it }, label = { Text("Tipo") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(value = genero, onValueChange = { genero = it }, label = { Text("Gênero") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(value = descricao, onValueChange = { descricao = it }, label = { Text("Descrição") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(value = avaliacao, onValueChange = { avaliacao = it }, label = { Text("Avaliação") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(value = comentarioPessoal, onValueChange = { comentarioPessoal = it }, label = { Text("Comentário pessoal") }, modifier = Modifier.fillMaxWidth())
 
-        OutlinedTextField(
-            value = genero,
-            onValueChange = { genero = it },
-            label = { Text("Gênero") },
-            modifier = Modifier.fillMaxWidth()
-        )
+       // Text("Avaliação: ${avaliacao.toInt()} estrelas")
+        //Slider(value = avaliacao, onValueChange = { avaliacao = it }, valueRange = 0f..5f, steps = 4, modifier = Modifier.padding(vertical = 16.dp))
 
-        OutlinedTextField(
-            value = descricao,
-            onValueChange = { descricao = it },
-            label = { Text("Descrição") },
-            modifier = Modifier.fillMaxWidth()
-        )
+        Button(onClick = {
+            if (nome.isBlank() || dataConsumo.isBlank() || tipo.isBlank() || genero.isBlank() || descricao.isBlank() || avaliacao.isBlank() || comentarioPessoal.isBlank()) {
+                feedbackMessage = "Todos os campos devem ser preenchidos."
+                return@Button
+            }
 
-        Text("Avaliação: ${avaliacao.toInt()} estrelas")
-        Slider(
-            value = avaliacao,
-            onValueChange = { avaliacao = it },
-            valueRange = 0f..5f,
-            steps = 4,
-            modifier = Modifier.padding(vertical = 16.dp)
-        )
+            val novoConsumo = Consumo(
+                nome = nome,
+                dataConsumo = dataConsumo,
+                tipo = tipo,
+                genero = genero,
+                descricao = descricao,
+                avaliacao = avaliacao,
+                comentarioPessoal = comentarioPessoal
+            )
 
-        Button(
-            onClick = {
-                if (nome.isBlank() || dataConsumo.isBlank() || genero.isBlank() || descricao.isBlank()) {
-                    feedbackMessage = "Todos os campos devem ser preenchidos."
-                    return@Button
+
+            consumoDAO.adicionar(novoConsumo) { sucesso ->
+                if (sucesso) {
+                    feedbackMessage = "Consumo salvo com sucesso!"
+                    onSave() // Navega para a próxima tela
+                } else {
+                    feedbackMessage = "Erro ao salvar. Tente novamente."
                 }
-
-                val novoConsumo = Consumo(nome, dataConsumo, genero, descricao, avaliacao, null)
-                onSave(novoConsumo) // Agora passando corretamente o Consumo criado
-
-                // Limpa os campos após salvar
-                nome = ""
-                dataConsumo = ""
-                genero = ""
-                descricao = ""
-                avaliacao = 0f
-                feedbackMessage = "Consumo salvo com sucesso!"
-            },
-            modifier = Modifier.padding(top = 16.dp)
-        ) {
+            }
+        }) {
             Text("Salvar")
         }
 
-        Text(
-            text = feedbackMessage,
-            color = Color.Red,
-            modifier = Modifier.padding(top = 8.dp)
-        )
+        Text(text = feedbackMessage, color = Color.Red, modifier = Modifier.padding(top = 8.dp))
     }
 }
 
-
-@Preview(showBackground = true)
-@Composable
-fun CadastroConsumoPreview() {
-    CadastroConsumoScreen(onSave = {})
-}
+//TODO: tipo data
