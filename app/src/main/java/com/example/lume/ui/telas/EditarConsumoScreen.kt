@@ -54,7 +54,7 @@ fun EditarConsumoScreen(navController: NavController, consumoNome: String?) {
         }
     }
 
-    // Caso o consumo ainda não tenha sido carregado
+
     consumo?.let {
         Column(
             modifier = Modifier
@@ -73,6 +73,7 @@ fun EditarConsumoScreen(navController: NavController, consumoNome: String?) {
             )
 
             // Campos para editar
+            //campo nome
             OutlinedTextField(
                 value = nome,
                 onValueChange = { nome = it },
@@ -80,6 +81,7 @@ fun EditarConsumoScreen(navController: NavController, consumoNome: String?) {
                 modifier = Modifier.fillMaxWidth()
             )
 
+            //campo data
             OutlinedTextField(
                 value = dataConsumo,
                 onValueChange = { dataConsumo = it },
@@ -87,6 +89,7 @@ fun EditarConsumoScreen(navController: NavController, consumoNome: String?) {
                 modifier = Modifier.fillMaxWidth()
             )
 
+            //campo tipo
             OutlinedTextField(
                 value = tipo,
                 onValueChange = { tipo = it },
@@ -94,6 +97,7 @@ fun EditarConsumoScreen(navController: NavController, consumoNome: String?) {
                 modifier = Modifier.fillMaxWidth()
             )
 
+            //campo genero
             OutlinedTextField(
                 value = genero,
                 onValueChange = { genero = it },
@@ -101,6 +105,7 @@ fun EditarConsumoScreen(navController: NavController, consumoNome: String?) {
                 modifier = Modifier.fillMaxWidth()
             )
 
+            //campo descrição
             OutlinedTextField(
                 value = descricao,
                 onValueChange = { descricao = it },
@@ -108,6 +113,7 @@ fun EditarConsumoScreen(navController: NavController, consumoNome: String?) {
                 modifier = Modifier.fillMaxWidth()
             )
 
+            //campo avaliação
             OutlinedTextField(
                 value = avaliacao,
                 onValueChange = { avaliacao = it },
@@ -115,6 +121,7 @@ fun EditarConsumoScreen(navController: NavController, consumoNome: String?) {
                 modifier = Modifier.fillMaxWidth()
             )
 
+            //campo comentario pessoal
             OutlinedTextField(
                 value = comentarioPessoal,
                 onValueChange = { comentarioPessoal = it },
@@ -124,7 +131,7 @@ fun EditarConsumoScreen(navController: NavController, consumoNome: String?) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Exibe a mensagem de feedback (sucesso ou erro)
+
             if (feedbackMessage.isNotEmpty()) {
                 Text(
                     text = feedbackMessage,

@@ -7,6 +7,6 @@ data class Consumo(
     val tipo: String = "",
     val genero: String = "",
     val descricao: String = "",
-    val avaliacao: String = "", // Usando Float diretamente
+    val avaliacao: String = "",
     val comentarioPessoal: String = ""
 )

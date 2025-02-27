@@ -178,8 +178,8 @@ fun Footer() {
 fun MainScreenPreview() {
     val navController = rememberNavController()
     MainScreen(
-        onNavigateToList = { /* Navegação de exemplo */ },
-        onNavigateToConsumption = { /* Navegação de exemplo */ },
+        onNavigateToList = {  },
+        onNavigateToConsumption = { },
         navController = navController
     )
 }

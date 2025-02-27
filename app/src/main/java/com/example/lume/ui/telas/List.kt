@@ -86,9 +86,8 @@ fun ListScreen(navController: NavController) {
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.End
                         ) {
-                            // Botão de Editar
+                            // botão de editar
                             IconButton(onClick = {
-                                // Navegar para a tela de edição passando o consumo
                                 navController.navigate("editar/${URLEncoder.encode(consumo.nome, "UTF-8")}")
 
                             }) {
@@ -109,7 +108,7 @@ fun ListScreen(navController: NavController) {
         }
     }
 
-    // Exibe o diálogo de confirmação
+    // exibe o diálogo
     consumoParaExcluir?.let { consumo ->
         AlertDialog(
             onDismissRequest = { consumoParaExcluir = null },
@@ -192,10 +191,4 @@ fun SearchBar(searchText: String, onSearchTextChanged: (String) -> Unit) {
     )
 }
 
-/*
-TODO:
-colocar mais informações nos cards
-editar e excluir
-colocar o pesquisar
-colocar barra de navegação com o voltar
-rolagem*/
+

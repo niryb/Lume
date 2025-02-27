@@ -27,7 +27,7 @@ fun RegisterScreen(
     var confirmPassword by remember { mutableStateOf("") }
     var feedbackMessage by remember { mutableStateOf("") }
 
-    // Simulação de um banco de dados local de usuários
+
     val registeredUsers = remember { mutableStateListOf<String>() }
 
     Column(
@@ -46,7 +46,7 @@ fun RegisterScreen(
             modifier = Modifier.padding(bottom = 32.dp)
         )
 
-        // Campo para novo usuário
+        // campo novo usuário
         OutlinedTextField(
             value = newUsername,
             onValueChange = { newUsername = it },
@@ -59,7 +59,7 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Campo para nova senha
+        // campo nova senha
         OutlinedTextField(
             value = newPassword,
             onValueChange = { newPassword = it },
@@ -74,7 +74,7 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Campo para confirmar a senha
+        // campo confirmar senha
         OutlinedTextField(
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
@@ -89,7 +89,7 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Botão para cadastrar
+        // botão de cadastrar
         Button(
             onClick = {
                 if (newUsername.isBlank()) {
@@ -121,7 +121,7 @@ fun RegisterScreen(
             Text(text = "Cadastrar", color = Color.White, fontSize = 18.sp)
         }
 
-        // Feedback do cadastro
+
         Text(
             text = feedbackMessage,
             color = if (feedbackMessage.contains("sucesso")) Color.Green else Color.Red,

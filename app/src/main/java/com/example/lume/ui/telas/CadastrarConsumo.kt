@@ -46,42 +46,55 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
             modifier = Modifier.padding(bottom = 32.dp)
         )
 
+        //campo nome
         OutlinedTextField(
             value = nome,
             onValueChange = { nome = it },
             label = { Text("Nome") },
             modifier = Modifier.fillMaxWidth())
 
+        //campo data
         OutlinedTextField(
             value = dataConsumo,
             onValueChange = { dataConsumo = it },
             label = { Text("Data do Consumo") },
             modifier = Modifier.fillMaxWidth())
 
+        //campo tipo
         OutlinedTextField(
             value = tipo,
             onValueChange = { tipo = it },
             label = { Text("Tipo") },
             modifier = Modifier.fillMaxWidth())
 
+        //campo genero
         OutlinedTextField(
             value = genero,
             onValueChange = { genero = it },
             label = { Text("Gênero") },
             modifier = Modifier.fillMaxWidth())
 
+        //campo descrição
         OutlinedTextField(
             value = descricao,
             onValueChange = { descricao = it },
             label = { Text("Descrição") },
             modifier = Modifier.fillMaxWidth())
 
+        //campo avaliação
         OutlinedTextField(
             value = avaliacao,
-            onValueChange = { avaliacao = it },
-            label = { Text("Avaliação") },
-            modifier = Modifier.fillMaxWidth())
+            onValueChange = { input ->
+                val num = input.toIntOrNull() // Tenta converter para número
+                if (num != null && num in 0..10) {
+                    avaliacao = input // Aceita apenas se estiver no intervalo 0-10
+                }
+            },
+            label = { Text("Avaliação (0 a 10)") },
+            modifier = Modifier.fillMaxWidth()
+            )
 
+        //campo comentario pessoal
         OutlinedTextField(
             value = comentarioPessoal,
             onValueChange = { comentarioPessoal = it },
@@ -91,6 +104,7 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
        // Text("Avaliação: ${avaliacao.toInt()} estrelas")
         //Slider(value = avaliacao, onValueChange = { avaliacao = it }, valueRange = 0f..5f, steps = 4, modifier = Modifier.padding(vertical = 16.dp))
 
+        //botao de cadastrar
         Button(onClick = {
             if (nome.isBlank() || dataConsumo.isBlank() || tipo.isBlank() || genero.isBlank() || descricao.isBlank() || avaliacao.isBlank() || comentarioPessoal.isBlank()) {
                 feedbackMessage = "Todos os campos devem ser preenchidos."

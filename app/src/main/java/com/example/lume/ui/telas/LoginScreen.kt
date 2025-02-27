@@ -50,16 +50,16 @@ fun LoginScreen(
     ) {
         // Imagem da Logo
         Image(
-            painter = painterResource(id = R.drawable.logo_remove), // Substitua pelo nome correto da imagem
+            painter = painterResource(id = R.drawable.logo_remove),
             contentDescription = "Logo Lume",
             modifier = Modifier
-                .size(300.dp) // Ajuste o tamanho conforme necessário
-                //.clip(CircleShape) // Aplica o formato circular
+                .size(300.dp)
+                //.clip(CircleShape)
                 //.background(Color.White)
                 .padding(bottom = 5.dp)
         )
 
-        // Campo Nome de Usuário
+        // campo nome de usuário
         OutlinedTextField(
             value = username,
             onValueChange = { username = it },
@@ -73,7 +73,7 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Campo Senha
+        // campo senha
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
@@ -89,14 +89,14 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Botão "Esqueceu a senha?"
+        // botão "esqueceu a senha?"
         TextButton(onClick = { /* Implementar recuperação de senha, se necessário */ }) {
             Text("Esqueceu a senha?", color = Color(0xFF6D4C41))
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Botão de Login
+        // botão de login
         Button(
             onClick = {
                 if (username == validUser && password == validPassword) {
@@ -115,7 +115,7 @@ fun LoginScreen(
             Text(text = "Login", color = Color.White, fontSize = 18.sp)
         }
 
-        // Feedback do login
+
         Text(
             text = feedbackMessage,
             color = if (feedbackMessage == "Login bem-sucedido!") Color.Green else Color.Red,
@@ -124,7 +124,7 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Botão para navegar para a tela de cadastro
+        // Botão para ir para o cadastro
         TextButton(onClick = onRegisterClicked) {
             Text("Ainda não tem conta? Cadastre-se", color = Color(0xFF6D4C41))
         }
