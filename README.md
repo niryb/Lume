@@ -1,6 +1,4 @@
-# Lume - Diário de Consumo Cultural
-
-![Lume Logo](#) <!-- Adicione um link para o logo caso tenha -->
+# Lume - Seu diário de consumo cultural, iluminando suas experiências.
 
 ### 📱 Projeto de PDM (Programação para Dispositivos Móveis)
 
