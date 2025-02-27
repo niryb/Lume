@@ -19,7 +19,7 @@ import com.example.lume.ui.theme.DeepBlue
 
 @Composable
 fun CadastroConsumoScreen(onSave: () -> Unit) {
-    val consumoDAO = remember { ConsumoDAO() } // Instância do DAO
+    val consumoDAO = remember { ConsumoDAO() } 
 
     var nome by remember { mutableStateOf("") }
     var dataConsumo by remember { mutableStateOf("") }
@@ -85,9 +85,9 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
         OutlinedTextField(
             value = avaliacao,
             onValueChange = { input ->
-                val num = input.toIntOrNull() // Tenta converter para número
+                val num = input.toIntOrNull() 
                 if (num != null && num in 0..10) {
-                    avaliacao = input // Aceita apenas se estiver no intervalo 0-10
+                    avaliacao = input 
                 }
             },
             label = { Text("Avaliação (0 a 10)") },
