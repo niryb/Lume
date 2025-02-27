@@ -42,17 +42,51 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
         Text(
             text = "Cadastro Consumo",
             fontSize = 32.sp,
-            color = DeepBlue,
+            color = Color(0xFFDAA520),
             modifier = Modifier.padding(bottom = 32.dp)
         )
 
-        OutlinedTextField(value = nome, onValueChange = { nome = it }, label = { Text("Nome") }, modifier = Modifier.fillMaxWidth())
-        OutlinedTextField(value = dataConsumo, onValueChange = { dataConsumo = it }, label = { Text("Data do Consumo") }, modifier = Modifier.fillMaxWidth())
-        OutlinedTextField(value = tipo, onValueChange = { tipo = it }, label = { Text("Tipo") }, modifier = Modifier.fillMaxWidth())
-        OutlinedTextField(value = genero, onValueChange = { genero = it }, label = { Text("Gênero") }, modifier = Modifier.fillMaxWidth())
-        OutlinedTextField(value = descricao, onValueChange = { descricao = it }, label = { Text("Descrição") }, modifier = Modifier.fillMaxWidth())
-        OutlinedTextField(value = avaliacao, onValueChange = { avaliacao = it }, label = { Text("Avaliação") }, modifier = Modifier.fillMaxWidth())
-        OutlinedTextField(value = comentarioPessoal, onValueChange = { comentarioPessoal = it }, label = { Text("Comentário pessoal") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(
+            value = nome,
+            onValueChange = { nome = it },
+            label = { Text("Nome") },
+            modifier = Modifier.fillMaxWidth())
+
+        OutlinedTextField(
+            value = dataConsumo,
+            onValueChange = { dataConsumo = it },
+            label = { Text("Data do Consumo") },
+            modifier = Modifier.fillMaxWidth())
+
+        OutlinedTextField(
+            value = tipo,
+            onValueChange = { tipo = it },
+            label = { Text("Tipo") },
+            modifier = Modifier.fillMaxWidth())
+
+        OutlinedTextField(
+            value = genero,
+            onValueChange = { genero = it },
+            label = { Text("Gênero") },
+            modifier = Modifier.fillMaxWidth())
+
+        OutlinedTextField(
+            value = descricao,
+            onValueChange = { descricao = it },
+            label = { Text("Descrição") },
+            modifier = Modifier.fillMaxWidth())
+
+        OutlinedTextField(
+            value = avaliacao,
+            onValueChange = { avaliacao = it },
+            label = { Text("Avaliação") },
+            modifier = Modifier.fillMaxWidth())
+
+        OutlinedTextField(
+            value = comentarioPessoal,
+            onValueChange = { comentarioPessoal = it },
+            label = { Text("Comentário pessoal") },
+            modifier = Modifier.fillMaxWidth())
 
        // Text("Avaliação: ${avaliacao.toInt()} estrelas")
         //Slider(value = avaliacao, onValueChange = { avaliacao = it }, valueRange = 0f..5f, steps = 4, modifier = Modifier.padding(vertical = 16.dp))
@@ -73,7 +107,6 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
                 comentarioPessoal = comentarioPessoal
             )
 
-
             consumoDAO.adicionar(novoConsumo) { sucesso ->
                 if (sucesso) {
                     feedbackMessage = "Consumo salvo com sucesso!"
@@ -81,6 +114,7 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
                 } else {
                     feedbackMessage = "Erro ao salvar. Tente novamente."
                 }
+
             }
         }) {
             Text("Salvar")
@@ -90,4 +124,3 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
     }
 }
 
-//TODO: tipo data

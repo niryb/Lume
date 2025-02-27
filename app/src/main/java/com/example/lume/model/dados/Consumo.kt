@@ -1,6 +1,7 @@
 package com.example.lume.model.dados
 
 data class Consumo(
+    var id: String = "",
     val nome: String = "",
     val dataConsumo: String = "",
     val tipo: String = "",

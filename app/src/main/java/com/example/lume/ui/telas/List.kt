@@ -26,12 +26,14 @@ import com.example.lume.model.dados.ConsumoDAO
 import com.example.lume.ui.theme.DeepBlue
 import com.example.lume.ui.theme.NightBlack
 import com.example.lume.ui.theme.StarYellow
+import java.net.URLEncoder
 
 @Composable
 fun ListScreen(navController: NavController) {
     val consumoDAO = remember { ConsumoDAO() }
     var consumos by remember { mutableStateOf<List<Consumo>>(emptyList()) }
     var searchText by remember { mutableStateOf("") }
+    var consumoParaExcluir by remember { mutableStateOf<Consumo?>(null) }
 
     LaunchedEffect(Unit) {
         consumoDAO.buscarEmTempoReal { lista ->
@@ -40,7 +42,10 @@ fun ListScreen(navController: NavController) {
     }
 
     val filteredConsumos = consumos.filter { consumo ->
-        consumo.nome.contains(searchText, ignoreCase = true) || consumo.genero.contains(searchText, ignoreCase = true) || consumo.tipo.contains(searchText, ignoreCase = true)
+        consumo.nome.contains(searchText, ignoreCase = true) || consumo.genero.contains(
+            searchText,
+            ignoreCase = true
+        ) || consumo.tipo.contains(searchText, ignoreCase = true)
     }
 
     Scaffold(
@@ -53,13 +58,19 @@ fun ListScreen(navController: NavController) {
                 .padding(16.dp)
         ) {
             item {
-                Text("Meu diário de consumo", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.padding(bottom = 16.dp))
+                Text(
+                    "Meu diário de consumo",
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
                 SearchBar(searchText, onSearchTextChanged = { searchText = it })
                 Spacer(modifier = Modifier.height(16.dp))
             }
             items(filteredConsumos) { consumo ->
                 Card(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
                     colors = CardDefaults.cardColors(containerColor = Color(0xFFF5E1BE))
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
@@ -71,18 +82,59 @@ fun ListScreen(navController: NavController) {
                         Text("Descrição: ${consumo.descricao}")
                         Text("Avaliação: ${consumo.avaliacao}")
                         Text("Comentário: ${consumo.comentarioPessoal}")
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                            IconButton(onClick = { /* Editar consumo */ }) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            // Botão de Editar
+                            IconButton(onClick = {
+                                // Navegar para a tela de edição passando o consumo
+                                navController.navigate("editar/${URLEncoder.encode(consumo.nome, "UTF-8")}")
+
+                            }) {
                                 Icon(imageVector = Icons.Default.Edit, contentDescription = "Editar", tint = DeepBlue)
                             }
-                            IconButton(onClick = { /* Excluir consumo */ }) {
-                                Icon(imageVector = Icons.Default.Delete, contentDescription = "Excluir", tint = DeepBlue)
+                            //botao de excluir
+                            IconButton(onClick = { consumoParaExcluir = consumo }) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Excluir",
+                                    tint = DeepBlue
+                                )
                             }
                         }
                     }
                 }
             }
         }
+    }
+
+    // Exibe o diálogo de confirmação
+    consumoParaExcluir?.let { consumo ->
+        AlertDialog(
+            onDismissRequest = { consumoParaExcluir = null },
+            title = { Text("Excluir consumo") },
+            text = { Text("Tem certeza que deseja excluir '${consumo.nome}'? Esta ação não pode ser desfeita.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        consumoDAO.removerPorNome(consumo.nome) { sucesso ->
+                            if (sucesso) {
+                                consumos = consumos.filter { it.nome != consumo.nome }
+                            }
+                        }
+                        consumoParaExcluir = null
+                    }
+                ) {
+                    Text("Excluir", color = Color.Red)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { consumoParaExcluir = null }) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 }
 
@@ -100,7 +152,7 @@ fun BarraNavegacaoList(navController: NavController, modifier: Modifier = Modifi
             containerColor = Color(0xFFF5E1BE)
         ),
         actions = {
-            IconButton(onClick = {navController.navigate("main")}) {
+            IconButton(onClick = { navController.navigate("main") }) {
                 Icon(
                     imageVector = Icons.Default.Home,
                     contentDescription = stringResource(R.string.bottom_navigation_home),

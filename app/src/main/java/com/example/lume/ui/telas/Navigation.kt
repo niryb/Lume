@@ -1,5 +1,6 @@
 package com.example.lume.ui.telas
 
+import EditarConsumoScreen
 import androidx.compose.runtime.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -41,6 +42,10 @@ fun AppNavigation() {
         }
         composable("list") {
             ListScreen(navController = navController)
+        }
+        composable("editar/{consumoNome}") { backStackEntry ->
+            val consumoNome = backStackEntry.arguments?.getString("consumoNome")
+            EditarConsumoScreen(navController, consumoNome)
         }
     }
 }
