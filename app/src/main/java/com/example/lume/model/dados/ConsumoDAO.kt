@@ -1,5 +1,6 @@
 package com.example.lume.model.dados
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObjects
@@ -49,21 +50,32 @@ class ConsumoDAO {
     }
     // Busca um consumo pelo nome
     fun buscarPorNome(nome: String, callback: (Consumo?) -> Unit) {
+        // Normaliza o nome inserido pelo usuário, removendo espaços e convertendo para minúsculas
+        val nomeNormalizado = nome.trim().toLowerCase().replace("[^a-z0-9]".toRegex(), "")
+
+        // Log para verificar o nome normalizado
+        Log.d("ConsumoDAO", "Buscando consumo com nome normalizado: $nomeNormalizado")
+
         db.collection("consumos")
-            .whereEqualTo("nome", nome) // Filtra os documentos pelo campo "nome"
-            .get()
+            .get()  // Busca todos os documentos da coleção
             .addOnSuccessListener { documents ->
-                if (documents.isEmpty) {
-                    // Nenhum documento encontrado
-                    callback(null)
-                } else {
-                    // Retorna o primeiro consumo encontrado (assumindo que o nome é único)
-                    val consumo = documents.toObjects<Consumo>().firstOrNull()
+                val consumoEncontrado = documents.firstOrNull { document ->
+                    // Normaliza o nome do documento para comparar com o nome do usuário
+                    val nomeDocumento = document.getString("nome")?.trim()?.toLowerCase()?.replace("[^a-z0-9]".toRegex(), "")
+                    nomeDocumento == nomeNormalizado
+                }
+
+                if (consumoEncontrado != null) {
+                    // Se encontrou um consumo com nome correspondente, retorne ele
+                    val consumo = consumoEncontrado.toObject(Consumo::class.java)
                     callback(consumo)
+                } else {
+                    // Se nenhum documento foi encontrado, retorna null
+                    callback(null)
                 }
             }
             .addOnFailureListener {
-                // Em caso de erro, retorna null
+                // Em caso de falha ao buscar os documentos
                 callback(null)
             }
     }
@@ -98,26 +110,39 @@ class ConsumoDAO {
     }
 
     fun atualizarPorNome(consumo: Consumo, callback: (Boolean) -> Unit) {
+        // Log inicial para verificar o nome do consumo a ser atualizado
+        Log.d("ConsumoDAO", "Iniciando atualização para o consumo: $consumo")
+
         db.collection("consumos")
             .whereEqualTo("nome", consumo.nome) // Busca o documento pelo nome
             .get()
             .addOnSuccessListener { querySnapshot ->
                 if (!querySnapshot.isEmpty) {
                     val documentId = querySnapshot.documents[0].id // Obtém o ID do documento encontrado
+                    Log.d("ConsumoDAO", "Documento encontrado com ID: $documentId")
+
                     db.collection("consumos")
                         .document(documentId) // Atualiza usando o ID do documento encontrado
                         .set(consumo)
                         .addOnSuccessListener {
+                            // Log para confirmar que o consumo foi atualizado com sucesso
+                            Log.d("ConsumoDAO", "Consumo atualizado com sucesso no banco de dados.")
                             callback(true) // Sucesso
                         }
-                        .addOnFailureListener {
+                        .addOnFailureListener { exception ->
+                            // Log de erro caso a atualização falhe
+                            Log.e("ConsumoDAO", "Erro ao atualizar consumo no banco de dados: ${exception.message}", exception)
                             callback(false) // Falha ao atualizar
                         }
                 } else {
+                    // Log quando nenhum documento for encontrado para o nome fornecido
+                    Log.e("ConsumoDAO", "Nenhum documento encontrado para o nome: ${consumo.nome}")
                     callback(false) // Nenhum documento encontrado com o nome fornecido
                 }
             }
-            .addOnFailureListener {
+            .addOnFailureListener { exception ->
+                // Log de erro caso a busca falhe
+                Log.e("ConsumoDAO", "Erro ao buscar documento para atualização: ${exception.message}", exception)
                 callback(false) // Falha ao buscar o documento
             }
     }
