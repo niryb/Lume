@@ -8,5 +8,6 @@ data class Consumo(
     val genero: String = "",
     val descricao: String = "",
     val avaliacao: String = "",
-    val comentarioPessoal: String = ""
+    val comentarioPessoal: String = "",
+    val capaFilmeUrl: String? = null
 )

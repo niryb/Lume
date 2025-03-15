@@ -58,7 +58,9 @@ dependencies {
     implementation(libs.firebase.firestore.ktx)
     implementation("com.google.firebase:firebase-firestore-ktx:24.9.1")
     implementation("com.google.firebase:firebase-bom:32.7.2") // BOM para evitar conflitos
-
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2")
 
 
 

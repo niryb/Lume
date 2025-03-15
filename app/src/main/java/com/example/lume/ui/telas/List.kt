@@ -1,11 +1,13 @@
 package com.example.lume.ui.telas
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Close
@@ -14,12 +16,15 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import coil.compose.rememberImagePainter
 import com.example.lume.R
 import com.example.lume.model.dados.Consumo
 import com.example.lume.model.dados.ConsumoDAO
@@ -74,6 +79,18 @@ fun ListScreen(navController: NavController) {
                     colors = CardDefaults.cardColors(containerColor = Color(0xFFF5E1BE))
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
+                        if (!consumo.capaFilmeUrl.isNullOrEmpty()) {
+                            Image(
+                                painter = rememberImagePainter(consumo.capaFilmeUrl),
+                                contentDescription = "Capa do filme",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp)
+                                    .clip(RoundedCornerShape(8.dp)),
+                                contentScale = ContentScale.Crop
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
                         Text(consumo.nome, style = MaterialTheme.typography.titleMedium)
                         Text("Gênero: ${consumo.genero}")
                         Text("Data Consumo: ${consumo.dataConsumo}")
