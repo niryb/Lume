@@ -1,25 +1,38 @@
 package com.example.lume.ui.telas
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.rememberImagePainter
 import com.example.lume.R
 import com.example.lume.model.dados.Consumo
 import com.example.lume.model.dados.ConsumoDAO
 import com.example.lume.ui.theme.DeepBlue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.URL
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CadastroConsumoScreen(onSave: () -> Unit) {
     val consumoDAO = remember { ConsumoDAO() } // Instância do DAO
+    val scope = rememberCoroutineScope()
 
     var nome by remember { mutableStateOf("") }
     var dataConsumo by remember { mutableStateOf("") }
@@ -29,12 +42,19 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
     var avaliacao by remember { mutableStateOf("") }
     var comentarioPessoal by remember { mutableStateOf("") }
     var feedbackMessage by remember { mutableStateOf("") }
+    var capaFilmeUrl by remember { mutableStateOf<String?>(null) }
+
+    val tipos = listOf("Filme", "Série", "Dorama", "Livro", "Outros")
+    var isExpanded by remember { mutableStateOf(false) }
+
+
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF5DEB3))
-            .padding(16.dp),
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -60,12 +80,57 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
             label = { Text("Data do Consumo") },
             modifier = Modifier.fillMaxWidth())
 
-        //campo tipo
-        OutlinedTextField(
-            value = tipo,
-            onValueChange = { tipo = it },
-            label = { Text("Tipo") },
-            modifier = Modifier.fillMaxWidth())
+        // Campo tipo (menu suspenso)
+        ExposedDropdownMenuBox(
+            expanded = isExpanded,
+            onExpandedChange = { isExpanded = it }
+        ) {
+            OutlinedTextField(
+                value = tipo,
+                onValueChange = { tipo = it },
+                label = { Text("Tipo") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor(),
+                readOnly = true
+            )
+
+            ExposedDropdownMenu(
+                expanded = isExpanded,
+                onDismissRequest = { isExpanded = false }
+            ) {
+                tipos.forEach { tipoItem ->
+                    DropdownMenuItem(
+                        text = { Text(tipoItem) },
+                        onClick = {
+                            tipo = tipoItem
+                            isExpanded = false
+                            // Se o tipo for "Filme" ou "Série", busca os dados do filme
+                            if (tipo in listOf("Filme", "Série") && nome.isNotBlank()) {
+                                scope.launch {
+                                    val filme = buscarFilme(nome)
+                                    if (filme != null) {
+                                        descricao = filme["descricao"] ?: "Descrição não encontrada"
+                                        capaFilmeUrl = filme["capaUrl"]
+                                    }
+                                }
+                            }
+                        }
+                    )
+                }
+            }
+        }
+        // Exibe a capa do filme, se disponível
+        if (capaFilmeUrl != null) {
+            Image(
+                painter = rememberImagePainter(capaFilmeUrl),
+                contentDescription = "Capa do filme",
+                modifier = Modifier
+                    .size(150.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                contentScale = ContentScale.Crop
+            )
+        }
 
         //campo genero
         OutlinedTextField(
@@ -118,7 +183,8 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
                 genero = genero,
                 descricao = descricao,
                 avaliacao = avaliacao,
-                comentarioPessoal = comentarioPessoal
+                comentarioPessoal = comentarioPessoal,
+                capaFilmeUrl = capaFilmeUrl
             )
 
             consumoDAO.adicionar(novoConsumo) { sucesso ->
@@ -138,3 +204,44 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
     }
 }
 
+suspend fun buscarFilme(nomeFilme: String): Map<String, String>? {
+    return withContext(Dispatchers.IO) {
+        try {
+            val apiKey = "90f38b2a055f8b03fe62500b4ca55807"
+            val url = URL("https://api.themoviedb.org/3/search/movie?api_key=$apiKey&query=$nomeFilme&language=pt-BR")
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "GET"
+            connection.connect()
+
+            if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+                val inputStream = connection.inputStream
+                val response = inputStream.bufferedReader().use { it.readText() }
+                inputStream.close()
+
+                // Extrai os dados do JSON
+                val jsonResponse = JSONObject(response)
+                val results = jsonResponse.getJSONArray("results")
+                if (results.length() > 0) {
+                    val primeiroFilme = results.getJSONObject(0)
+                    val titulo = primeiroFilme.getString("title")
+                    val descricao = primeiroFilme.getString("overview")
+                    val capaUrl = primeiroFilme.getString("poster_path")
+
+                    // Retorna os dados como um Map
+                    mapOf(
+                        "titulo" to titulo,
+                        "descricao" to descricao,
+                        "capaUrl" to "https://image.tmdb.org/t/p/w500$capaUrl"
+                    )
+                } else {
+                    null
+                }
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+}

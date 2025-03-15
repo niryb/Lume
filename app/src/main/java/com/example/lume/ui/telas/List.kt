@@ -79,6 +79,7 @@ fun ListScreen(navController: NavController) {
                     colors = CardDefaults.cardColors(containerColor = Color(0xFFF5E1BE))
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
+                        // Exibe a capa do filme, se disponível
                         if (!consumo.capaFilmeUrl.isNullOrEmpty()) {
                             Image(
                                 painter = rememberImagePainter(consumo.capaFilmeUrl),
