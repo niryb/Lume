@@ -26,7 +26,7 @@ fun AppNavigation() {
             )
         }
         composable("register") {
-            RegisterScreen(onRegisterSuccess = { navController.navigate("main") })
+            RegisterScreen(onRegisterSuccess = { navController.navigate("login") })
         }
         composable("main") {
             MainScreen(
