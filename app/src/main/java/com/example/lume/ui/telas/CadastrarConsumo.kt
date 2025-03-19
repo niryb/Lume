@@ -42,7 +42,7 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
     var avaliacao by remember { mutableStateOf("") }
     var comentarioPessoal by remember { mutableStateOf("") }
     var feedbackMessage by remember { mutableStateOf("") }
-    var capaFilmeUrl by remember { mutableStateOf<String?>(null) }
+    var capaUrl by remember { mutableStateOf<String?>(null) }
 
     val tipos = listOf("Filme", "Série", "Dorama", "Livro", "Outros")
     var isExpanded by remember { mutableStateOf(false) }
@@ -105,13 +105,27 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
                         onClick = {
                             tipo = tipoItem
                             isExpanded = false
-                            // Se o tipo for "Filme" ou "Série", busca os dados do filme
-                            if (tipo in listOf("Filme", "Série") && nome.isNotBlank()) {
+
+                            // Busca os dados automaticamente com base no tipo selecionado
+                            if (nome.isNotBlank()) {
                                 scope.launch {
-                                    val filme = buscarFilme(nome)
-                                    if (filme != null) {
-                                        descricao = filme["descricao"] ?: "Descrição não encontrada"
-                                        capaFilmeUrl = filme["capaUrl"]
+                                    when (tipo) {
+                                        "Filme", "Série" -> {
+                                            val resultado = buscarFilme(nome)
+                                            if (resultado != null) {
+                                                nome = resultado["titulo"] ?: nome
+                                                descricao = resultado["descricao"] ?: "Descrição não encontrada"
+                                                capaUrl = resultado["capaUrl"]
+                                            }
+                                        }
+                                        "Livro" -> {
+                                            val resultado = buscarLivro(nome)
+                                            if (resultado != null) {
+                                                nome = resultado["titulo"] ?: nome
+                                                descricao = resultado["descricao"] ?: "Descrição não encontrada"
+                                                capaUrl = resultado["capaUrl"]
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -121,9 +135,9 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
             }
         }
         // Exibe a capa do filme, se disponível
-        if (capaFilmeUrl != null) {
+        if (capaUrl != null) {
             Image(
-                painter = rememberImagePainter(capaFilmeUrl),
+                painter = rememberImagePainter(capaUrl),
                 contentDescription = "Capa do filme",
                 modifier = Modifier
                     .size(150.dp)
@@ -184,7 +198,7 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
                 descricao = descricao,
                 avaliacao = avaliacao,
                 comentarioPessoal = comentarioPessoal,
-                capaFilmeUrl = capaFilmeUrl
+                capaUrl = capaUrl
             )
 
             consumoDAO.adicionar(novoConsumo) { sucesso ->
@@ -242,6 +256,60 @@ suspend fun buscarFilme(nomeFilme: String): Map<String, String>? {
         } catch (e: Exception) {
             e.printStackTrace()
             null
+        }
+    }
+}
+
+suspend fun buscarLivro(nomeLivro: String): Map<String, String>? {
+    return withContext(Dispatchers.IO) {
+        try {
+            val url = URL("https://openlibrary.org/search.json?q=$nomeLivro")
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "GET"
+            connection.connect()
+
+            if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+                val inputStream = connection.inputStream
+                val response = inputStream.bufferedReader().use { it.readText() }
+                inputStream.close()
+
+                // Extrai os dados do JSON
+                val jsonResponse = JSONObject(response)
+                val docs = jsonResponse.getJSONArray("docs")
+
+                if (docs.length() > 0) {
+                    val primeiroLivro = docs.getJSONObject(0)
+                    val titulo = primeiroLivro.getString("title")
+
+                    // Verifique se os campos opcionais existem
+                    val autor = primeiroLivro.optJSONArray("author_name")?.getString(0) ?: "Autor desconhecido"
+                    val descricao = primeiroLivro.optString("first_sentence", "Descrição não disponível")
+                    val coverId = primeiroLivro.optString("cover_i", null)
+
+                    // Gera a URL da capa, se existir
+                    val capaUrl = coverId?.let {
+                        "https://covers.openlibrary.org/b/id/$it-M.jpg"
+                    }
+
+                    // Retorna os dados como um Map
+                    return@withContext mapOf(
+                        "titulo" to titulo,
+                        "autor" to autor,
+                        "descricao" to descricao,
+                        "capaUrl" to capaUrl.orEmpty() // Use orEmpty() caso capaUrl seja null
+                    )
+                } else {
+                    // Retorna null caso não haja resultado
+                    return@withContext null
+                }
+            } else {
+                // Retorna null se a resposta não for OK
+                return@withContext null
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // Retorna null em caso de exceção
+            return@withContext null
         }
     }
 }

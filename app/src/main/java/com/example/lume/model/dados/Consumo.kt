@@ -9,5 +9,5 @@ data class Consumo(
     val descricao: String = "",
     val avaliacao: String = "",
     val comentarioPessoal: String = "",
-    val capaFilmeUrl: String? = null
+    val capaUrl: String? = null
 )

@@ -80,10 +80,10 @@ fun ListScreen(navController: NavController) {
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         // Exibe a capa do filme, se disponível
-                        if (!consumo.capaFilmeUrl.isNullOrEmpty()) {
+                        if (!consumo.capaUrl.isNullOrEmpty()) {
                             Image(
-                                painter = rememberImagePainter(consumo.capaFilmeUrl),
-                                contentDescription = "Capa do filme",
+                                painter = rememberImagePainter(consumo.capaUrl),
+                                contentDescription = "Capa",
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(200.dp)

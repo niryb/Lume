@@ -82,12 +82,19 @@ class ConsumoDAO {
 
     // Adiciona um novo consumo
     fun adicionar(consumo: Consumo, callback: (Boolean) -> Unit) {
+        // Log para verificar o consumo que está sendo adicionado
+        Log.d("ConsumoDAO", "Tentando adicionar novo consumo: $consumo")
+
         db.collection("consumos")
             .add(consumo)
             .addOnSuccessListener { documentReference ->
+                // Log para confirmar que o consumo foi adicionado com sucesso
+                Log.d("ConsumoDAO", "Consumo adicionado com sucesso! ID do documento: ${documentReference.id}")
                 callback(true) // Sucesso ao adicionar
             }
-            .addOnFailureListener {
+            .addOnFailureListener { exception ->
+                // Log de erro caso a adição falhe
+                Log.e("ConsumoDAO", "Erro ao adicionar consumo: ${exception.message}", exception)
                 callback(false) // Falha ao adicionar
             }
     }
@@ -195,4 +202,3 @@ class ConsumoDAO {
 
 
 
-//TO DO: os buscar
