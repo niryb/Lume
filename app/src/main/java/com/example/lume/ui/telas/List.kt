@@ -1,5 +1,6 @@
 package com.example.lume.ui.telas
 
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.filled.Delete
@@ -81,8 +82,9 @@ fun ListScreen(navController: NavController) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         // Exibe a capa do filme, se disponível
                         if (!consumo.imagemUri.isNullOrEmpty()) {
+                            val uri = Uri.parse(consumo.imagemUri)
                             Image(
-                                painter = rememberImagePainter(consumo.imagemUri),
+                                painter = rememberImagePainter(uri),
                                 contentDescription = "Imagem do Consumo",
                                 modifier = Modifier
                                     .fillMaxWidth()

@@ -1,6 +1,10 @@
 package com.example.lume.ui.telas
 
+import android.content.Context
 import android.net.Uri
+import android.os.Environment
+import android.widget.Toast
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -16,20 +20,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
 import coil.compose.rememberImagePainter
-import com.example.lume.R
 import com.example.lume.model.dados.Consumo
 import com.example.lume.model.dados.ConsumoDAO
-import com.example.lume.ui.theme.DeepBlue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
+
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,10 +56,13 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
     var feedbackMessage by remember { mutableStateOf("") }
     var capaUrl by remember { mutableStateOf<String?>(null) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var imageUriToCapture by remember { mutableStateOf<Uri?>(null) }
 
 
     val tipos = listOf("Filme", "Série", "Dorama", "Livro", "Outros")
     var isExpanded by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
 
     val imagePickerResult = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -61,10 +73,65 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
         }
     )
 
+    // Launcher para capturar foto usando a câmera
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture(),
+        onResult = { success: Boolean ->
+            if (success) {
+                selectedImageUri = imageUriToCapture
+            }
+        }
+    )
+
+
+    // Função para criar um arquivo de imagem
+    fun createImageFile(context: Context): File {
+        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        val storageDir: File? = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+
+        if (storageDir == null) {
+            throw IOException("Não foi possível acessar o diretório de armazenamento.")
+        }
+
+        // Cria o arquivo temporário
+        return File.createTempFile(
+            "JPEG_${timeStamp}_", // Prefixo do nome do arquivo
+            ".jpg", // Sufixo do nome do arquivo
+            storageDir // Diretório onde o arquivo será salvo
+        ).apply {
+            // Garante que o arquivo seja excluído após o uso (opcional)
+            deleteOnExit()
+        }
+    }
+
     // Função para abrir a galeria
     fun openGallery() {
         imagePickerResult.launch("image/*")
     }
+
+
+
+    // Função para abrir a câmera
+    fun openCamera(context: Context) {
+        val file = createImageFile(context)
+        val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+        imageUriToCapture = uri
+        cameraLauncher.launch(uri)
+    }
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            // Permissão concedida, abra a câmera
+            openCamera(context)
+        } else {
+            // Permissão negada, exiba uma mensagem para o usuário
+            Toast.makeText(context, "Permissão da câmera negada", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+
+
 
 
 
@@ -153,9 +220,14 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
                 }
             }
         }
-        // Botão para abrir a galeria e selecionar uma foto
-        Button(onClick = { openGallery() }) {
-            Text(text = "Escolher Imagem")
+        // Botões para abrir a galeria ou câmera
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(onClick = { openGallery() }) {
+                Text(text = "Escolher Imagem")
+            }
+            Button(onClick = { openCamera(context) }) {
+                Text(text = "Tirar Foto")
+            }
         }
         selectedImageUri?.let {
             Image(
@@ -231,7 +303,7 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
                 avaliacao = avaliacao,
                 comentarioPessoal = comentarioPessoal,
                 capaUrl = capaUrl,
-                imagemUri = selectedImageUri.toString()
+                imagemUri = selectedImageUri?.toString()
             )
 
             consumoDAO.adicionar(novoConsumo) { sucesso ->
@@ -250,6 +322,8 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
         Text(text = feedbackMessage, color = Color.Red, modifier = Modifier.padding(top = 8.dp))
     }
 }
+
+
 
 suspend fun buscarFilme(nomeFilme: String): Map<String, String>? {
     return withContext(Dispatchers.IO) {
