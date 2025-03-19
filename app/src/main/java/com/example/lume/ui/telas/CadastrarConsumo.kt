@@ -1,5 +1,8 @@
 package com.example.lume.ui.telas
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -43,9 +46,25 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
     var comentarioPessoal by remember { mutableStateOf("") }
     var feedbackMessage by remember { mutableStateOf("") }
     var capaUrl by remember { mutableStateOf<String?>(null) }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
 
     val tipos = listOf("Filme", "Série", "Dorama", "Livro", "Outros")
     var isExpanded by remember { mutableStateOf(false) }
+
+    val imagePickerResult = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri: Uri? ->
+            uri?.let {
+                selectedImageUri = uri // Salva a URI da imagem selecionada
+            }
+        }
+    )
+
+    // Função para abrir a galeria
+    fun openGallery() {
+        imagePickerResult.launch("image/*")
+    }
 
 
 
@@ -134,11 +153,23 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
                 }
             }
         }
-        // Exibe a capa do filme, se disponível
-        if (capaUrl != null) {
+        // Botão para abrir a galeria e selecionar uma foto
+        Button(onClick = { openGallery() }) {
+            Text(text = "Escolher Imagem")
+        }
+        selectedImageUri?.let {
             Image(
-                painter = rememberImagePainter(capaUrl),
-                contentDescription = "Capa do filme",
+                painter = rememberImagePainter(it),
+                contentDescription = "Imagem da Galeria",
+                modifier = Modifier
+                    .size(150.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                contentScale = ContentScale.Crop
+            )
+        } ?: capaUrl?.let {
+            Image(
+                painter = rememberImagePainter(it),
+                contentDescription = "Capa do Filme",
                 modifier = Modifier
                     .size(150.dp)
                     .clip(RoundedCornerShape(8.dp)),
@@ -190,6 +221,7 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
                 return@Button
             }
 
+
             val novoConsumo = Consumo(
                 nome = nome,
                 dataConsumo = dataConsumo,
@@ -198,7 +230,8 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
                 descricao = descricao,
                 avaliacao = avaliacao,
                 comentarioPessoal = comentarioPessoal,
-                capaUrl = capaUrl
+                capaUrl = capaUrl,
+                imagemUri = selectedImageUri.toString()
             )
 
             consumoDAO.adicionar(novoConsumo) { sucesso ->

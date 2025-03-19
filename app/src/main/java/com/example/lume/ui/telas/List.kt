@@ -80,7 +80,19 @@ fun ListScreen(navController: NavController) {
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         // Exibe a capa do filme, se disponível
-                        if (!consumo.capaUrl.isNullOrEmpty()) {
+                        if (!consumo.imagemUri.isNullOrEmpty()) {
+                            Image(
+                                painter = rememberImagePainter(consumo.imagemUri),
+                                contentDescription = "Imagem do Consumo",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp)
+                                    .clip(RoundedCornerShape(8.dp)),
+                                contentScale = ContentScale.Crop
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                        } else if (!consumo.capaUrl.isNullOrEmpty()) {
+                            // Exibe a capa se não houver imagem da galeria
                             Image(
                                 painter = rememberImagePainter(consumo.capaUrl),
                                 contentDescription = "Capa",

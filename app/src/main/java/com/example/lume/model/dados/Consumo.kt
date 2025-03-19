@@ -9,5 +9,6 @@ data class Consumo(
     val descricao: String = "",
     val avaliacao: String = "",
     val comentarioPessoal: String = "",
-    val capaUrl: String? = null
+    val capaUrl: String? = null,
+    val imagemUri: String? = null
 )
