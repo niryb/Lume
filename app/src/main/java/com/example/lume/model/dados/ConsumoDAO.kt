@@ -197,8 +197,3 @@ class ConsumoDAO {
             }
     }
 }
-
-
-
-
-

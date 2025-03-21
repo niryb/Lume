@@ -16,7 +16,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 import android.util.Log
-import com.example.lume.ui.theme.DeepBlue
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.platform.LocalContext
+//import com.example.lume.ui.theme.DeepBlue
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 @Composable
 fun EditarConsumoScreen(navController: NavController, consumoNome: String?) {
@@ -28,9 +34,26 @@ fun EditarConsumoScreen(navController: NavController, consumoNome: String?) {
     var tipo by remember { mutableStateOf("") }
     var genero by remember { mutableStateOf("") }
     var descricao by remember { mutableStateOf("") }
-    var avaliacao by remember { mutableStateOf("") }
+    var avaliacao by remember { mutableStateOf(0f) } // Alterado para Float
     var comentarioPessoal by remember { mutableStateOf("") }
     var feedbackMessage by remember { mutableStateOf("") }
+
+    // Lógica para o DatePickerDialog
+    val context = LocalContext.current
+    val now = Clock.System.now()
+    val localDateTime = now.toLocalDateTime(TimeZone.currentSystemDefault())
+
+    val datePickerDialog = android.app.DatePickerDialog(
+        context,
+        { _, year, month, dayOfMonth ->
+            val dayStr = dayOfMonth.toString().padStart(2, '0')
+            val monthStr = (month + 1).toString().padStart(2, '0')
+            dataConsumo = "$dayStr/$monthStr/$year"
+        },
+        localDateTime.year,
+        localDateTime.monthNumber - 1,
+        localDateTime.dayOfMonth
+    )
 
     // Carregar o consumo a ser editado
     LaunchedEffect(consumoNome) {
@@ -45,7 +68,7 @@ fun EditarConsumoScreen(navController: NavController, consumoNome: String?) {
                     tipo = consumo?.tipo ?: ""
                     genero = consumo?.genero ?: ""
                     descricao = consumo?.descricao ?: ""
-                    avaliacao = consumo?.avaliacao ?: ""
+                    avaliacao = consumo?.avaliacao?.toFloatOrNull() ?: 0f // Convertendo para Float
                     comentarioPessoal = consumo?.comentarioPessoal ?: ""
                 } else {
                     Log.e("EditarConsumo", "Consumo não encontrado para o nome: $consumoNome")
@@ -54,15 +77,16 @@ fun EditarConsumoScreen(navController: NavController, consumoNome: String?) {
         }
     }
 
-
     consumo?.let {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0xFFF5DEB3))
-                .padding(16.dp),
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
+
         ) {
             // Título
             Text(
@@ -73,7 +97,7 @@ fun EditarConsumoScreen(navController: NavController, consumoNome: String?) {
             )
 
             // Campos para editar
-            //campo nome
+            // Campo nome
             OutlinedTextField(
                 value = nome,
                 onValueChange = { nome = it },
@@ -81,15 +105,15 @@ fun EditarConsumoScreen(navController: NavController, consumoNome: String?) {
                 modifier = Modifier.fillMaxWidth()
             )
 
-            //campo data
-            OutlinedTextField(
-                value = dataConsumo,
-                onValueChange = { dataConsumo = it },
-                label = { Text("Data do Consumo") },
+            // Campo data (substituído por um botão que abre o DatePickerDialog)
+            Button(
+                onClick = { datePickerDialog.show() },
                 modifier = Modifier.fillMaxWidth()
-            )
+            ) {
+                Text(if (dataConsumo.isNotEmpty()) "Data: $dataConsumo" else "Selecionar Data")
+            }
 
-            //campo tipo
+            // Campo tipo
             OutlinedTextField(
                 value = tipo,
                 onValueChange = { tipo = it },
@@ -97,7 +121,7 @@ fun EditarConsumoScreen(navController: NavController, consumoNome: String?) {
                 modifier = Modifier.fillMaxWidth()
             )
 
-            //campo genero
+            // Campo gênero
             OutlinedTextField(
                 value = genero,
                 onValueChange = { genero = it },
@@ -105,7 +129,7 @@ fun EditarConsumoScreen(navController: NavController, consumoNome: String?) {
                 modifier = Modifier.fillMaxWidth()
             )
 
-            //campo descrição
+            // Campo descrição
             OutlinedTextField(
                 value = descricao,
                 onValueChange = { descricao = it },
@@ -113,15 +137,22 @@ fun EditarConsumoScreen(navController: NavController, consumoNome: String?) {
                 modifier = Modifier.fillMaxWidth()
             )
 
-            //campo avaliação
-            OutlinedTextField(
+            // Campo avaliação (Slider)
+            Text(
+                text = "Avaliação: ${avaliacao.toInt()}",
+                fontSize = 16.sp,
+                color = Color.Black,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+            Slider(
                 value = avaliacao,
                 onValueChange = { avaliacao = it },
-                label = { Text("Avaliação") },
+                valueRange = 0f..10f,
+                steps = 9, // Passos de 1 em 1 (0 a 10)
                 modifier = Modifier.fillMaxWidth()
             )
 
-            //campo comentario pessoal
+            // Campo comentário pessoal
             OutlinedTextField(
                 value = comentarioPessoal,
                 onValueChange = { comentarioPessoal = it },
@@ -130,7 +161,6 @@ fun EditarConsumoScreen(navController: NavController, consumoNome: String?) {
             )
 
             Spacer(modifier = Modifier.height(16.dp))
-
 
             if (feedbackMessage.isNotEmpty()) {
                 Text(
@@ -146,17 +176,17 @@ fun EditarConsumoScreen(navController: NavController, consumoNome: String?) {
                 onClick = {
                     Log.d(
                         "EditarConsumo",
-                        "Tentando salvar consumo: nome=$nome, data=$dataConsumo, tipo=$tipo, genero=$genero, descricao=$descricao, avaliacao=$avaliacao"
+                        "Tentando salvar consumo: nome=$nome, data=$dataConsumo, tipo=$tipo, genero=$genero, descricao=$descricao, avaliacao=${avaliacao.toInt()}"
                     )
 
-                    if (nome.isNotBlank() && dataConsumo.isNotBlank() && tipo.isNotBlank() && genero.isNotBlank() && descricao.isNotBlank() && avaliacao.isNotBlank() && comentarioPessoal.isNotBlank()) {
+                    if (nome.isNotBlank() && dataConsumo.isNotBlank() && tipo.isNotBlank() && genero.isNotBlank() && descricao.isNotBlank() && avaliacao > 0 && comentarioPessoal.isNotBlank()) {
                         val consumoAtualizado = consumo!!.copy(
                             nome = nome,
                             dataConsumo = dataConsumo,
                             tipo = tipo,
                             genero = genero,
                             descricao = descricao,
-                            avaliacao = avaliacao,
+                            avaliacao = avaliacao.toInt().toString(), // Convertendo para String
                             comentarioPessoal = comentarioPessoal
                         )
                         Log.d("EditarConsumo", "Objeto consumo atualizado: $consumoAtualizado")
@@ -186,10 +216,5 @@ fun EditarConsumoScreen(navController: NavController, consumoNome: String?) {
                 Text("Salvar Alterações")
             }
         }
-
     }
 }
-
-
-
-

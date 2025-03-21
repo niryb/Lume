@@ -3,7 +3,7 @@ package com.example.lume.model.dados
 data class Consumo(
     var id: String = "",
     val nome: String = "",
-    val dataConsumo: String = "",
+    val dataConsumo: String = null.toString(),
     val tipo: String = "",
     val genero: String = "",
     val descricao: String = "",

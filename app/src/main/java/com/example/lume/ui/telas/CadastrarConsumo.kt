@@ -3,8 +3,8 @@ package com.example.lume.ui.telas
 import android.content.Context
 import android.net.Uri
 import android.os.Environment
+import android.util.Log
 import android.widget.Toast
-import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -24,18 +24,25 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
+//import androidx.media3.common.util.Log
 import coil.compose.rememberImagePainter
+import com.example.lume.Util.parseDate
 import com.example.lume.model.dados.Consumo
 import com.example.lume.model.dados.ConsumoDAO
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 
 import java.io.IOException
+import java.net.MalformedURLException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -45,24 +52,38 @@ import java.util.Locale
 fun CadastroConsumoScreen(onSave: () -> Unit) {
     val consumoDAO = remember { ConsumoDAO() } // Instância do DAO
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     var nome by remember { mutableStateOf("") }
     var dataConsumo by remember { mutableStateOf("") }
     var tipo by remember { mutableStateOf("") }
     var genero by remember { mutableStateOf("") }
     var descricao by remember { mutableStateOf("") }
-    var avaliacao by remember { mutableStateOf("") }
+    var avaliacao by remember { mutableStateOf(0f) }
     var comentarioPessoal by remember { mutableStateOf("") }
     var feedbackMessage by remember { mutableStateOf("") }
     var capaUrl by remember { mutableStateOf<String?>(null) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var imageUriToCapture by remember { mutableStateOf<Uri?>(null) }
 
-
-    val tipos = listOf("Filme", "Série", "Dorama", "Livro", "Outros")
+    val tipos = listOf("Filme", "Série", "Dorama", "Livro", "Artigo", "Podcast", "Outros")
     var isExpanded by remember { mutableStateOf(false) }
 
-    val context = LocalContext.current
+    val now = Clock.System.now()
+    val localDateTime = now.toLocalDateTime(TimeZone.currentSystemDefault())
+
+    val datePickerDialog = android.app.DatePickerDialog(
+        context,
+        { _, year, month, dayOfMonth ->
+            val dayStr = dayOfMonth.toString().padStart(2, '0')
+            val monthStr = (month + 1).toString().padStart(2, '0')
+            dataConsumo = "$dayStr/$monthStr/$year"
+        },
+        localDateTime.year,
+        localDateTime.monthNumber - 1,
+        localDateTime.dayOfMonth
+    )
+
 
     val imagePickerResult = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -82,7 +103,6 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
             }
         }
     )
-
 
     // Função para criar um arquivo de imagem
     fun createImageFile(context: Context): File {
@@ -109,8 +129,6 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
         imagePickerResult.launch("image/*")
     }
 
-
-
     // Função para abrir a câmera
     fun openCamera(context: Context) {
         val file = createImageFile(context)
@@ -118,6 +136,7 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
         imageUriToCapture = uri
         cameraLauncher.launch(uri)
     }
+
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -129,11 +148,6 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
             Toast.makeText(context, "Permissão da câmera negada", Toast.LENGTH_SHORT).show()
         }
     }
-
-
-
-
-
 
     Column(
         modifier = Modifier
@@ -152,19 +166,21 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
             modifier = Modifier.padding(bottom = 32.dp)
         )
 
-        //campo nome
+        // Campo nome
         OutlinedTextField(
             value = nome,
             onValueChange = { nome = it },
             label = { Text("Nome") },
-            modifier = Modifier.fillMaxWidth())
+            modifier = Modifier.fillMaxWidth()
+        )
 
-        //campo data
-        OutlinedTextField(
-            value = dataConsumo,
-            onValueChange = { dataConsumo = it },
-            label = { Text("Data do Consumo") },
-            modifier = Modifier.fillMaxWidth())
+        // Campo data
+        Button(
+            onClick = { datePickerDialog.show() },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(if (dataConsumo.isNotEmpty()) "Data: $dataConsumo" else "Selecionar Data")
+        }
 
         // Campo tipo (menu suspenso)
         ExposedDropdownMenuBox(
@@ -220,6 +236,7 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
                 }
             }
         }
+
         // Botões para abrir a galeria ou câmera
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(onClick = { openGallery() }) {
@@ -229,6 +246,7 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
                 Text(text = "Tirar Foto")
             }
         }
+
         selectedImageUri?.let {
             Image(
                 painter = rememberImagePainter(it),
@@ -249,50 +267,59 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
             )
         }
 
-        //campo genero
+        // Campo gênero
         OutlinedTextField(
             value = genero,
             onValueChange = { genero = it },
             label = { Text("Gênero") },
-            modifier = Modifier.fillMaxWidth())
+            modifier = Modifier.fillMaxWidth()
+        )
 
-        //campo descrição
+        // Campo descrição
         OutlinedTextField(
             value = descricao,
             onValueChange = { descricao = it },
             label = { Text("Descrição") },
-            modifier = Modifier.fillMaxWidth())
-
-        //campo avaliação
-        OutlinedTextField(
-            value = avaliacao,
-            onValueChange = { input ->
-                val num = input.toIntOrNull() // Tenta converter para número
-                if (num != null && num in 0..10) {
-                    avaliacao = input // Aceita apenas se estiver no intervalo 0-10
-                }
-            },
-            label = { Text("Avaliação (0 a 10)") },
             modifier = Modifier.fillMaxWidth()
-            )
+        )
 
-        //campo comentario pessoal
+        // Campo avaliação
+        Text(
+            text = "Avaliação: ${avaliacao.toInt()}",
+            fontSize = 16.sp,
+            color = Color.Black,
+            modifier = Modifier.padding(top = 8.dp)
+        )
+        Slider(
+            value = avaliacao,
+            onValueChange = { avaliacao = it },
+            valueRange = 0f..10f,
+            steps = 9, // Passos de 1 em 1 (0 a 10)
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        // Campo comentário pessoal
         OutlinedTextField(
             value = comentarioPessoal,
             onValueChange = { comentarioPessoal = it },
             label = { Text("Comentário pessoal") },
-            modifier = Modifier.fillMaxWidth())
+            modifier = Modifier.fillMaxWidth()
+        )
 
-       // Text("Avaliação: ${avaliacao.toInt()} estrelas")
-        //Slider(value = avaliacao, onValueChange = { avaliacao = it }, valueRange = 0f..5f, steps = 4, modifier = Modifier.padding(vertical = 16.dp))
 
-        //botao de cadastrar
+        // Botão de cadastrar
         Button(onClick = {
-            if (nome.isBlank() || dataConsumo.isBlank() || tipo.isBlank() || genero.isBlank() || descricao.isBlank() || avaliacao.isBlank() || comentarioPessoal.isBlank()) {
+            if (nome.isBlank() || dataConsumo.isBlank() || tipo.isBlank() || genero.isBlank() || descricao.isBlank() || avaliacao > 0 || comentarioPessoal.isBlank()) {
                 feedbackMessage = "Todos os campos devem ser preenchidos."
                 return@Button
             }
 
+            // Validação da data
+            val instantData = parseDate(dataConsumo)
+            if (instantData == null) {
+                feedbackMessage = "Formato de data inválido."
+                return@Button
+            }
 
             val novoConsumo = Consumo(
                 nome = nome,
@@ -300,7 +327,7 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
                 tipo = tipo,
                 genero = genero,
                 descricao = descricao,
-                avaliacao = avaliacao,
+                avaliacao = avaliacao.toInt().toString(),
                 comentarioPessoal = comentarioPessoal,
                 capaUrl = capaUrl,
                 imagemUri = selectedImageUri?.toString()
@@ -313,7 +340,6 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
                 } else {
                     feedbackMessage = "Erro ao salvar. Tente novamente."
                 }
-
             }
         }) {
             Text("Salvar")
@@ -322,8 +348,6 @@ fun CadastroConsumoScreen(onSave: () -> Unit) {
         Text(text = feedbackMessage, color = Color.Red, modifier = Modifier.padding(top = 8.dp))
     }
 }
-
-
 
 suspend fun buscarFilme(nomeFilme: String): Map<String, String>? {
     return withContext(Dispatchers.IO) {
@@ -334,10 +358,16 @@ suspend fun buscarFilme(nomeFilme: String): Map<String, String>? {
             connection.requestMethod = "GET"
             connection.connect()
 
+            android.util.Log.d("API_FILME", "Tentando conectar à API: ${url.toString()}")
+
             if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+                android.util.Log.d("API_FILME", "Conexão bem-sucedida. Código de resposta: ${connection.responseCode}")
+
                 val inputStream = connection.inputStream
                 val response = inputStream.bufferedReader().use { it.readText() }
                 inputStream.close()
+
+                android.util.Log.d("API_FILME", "Resposta da API: $response")
 
                 // Extrai os dados do JSON
                 val jsonResponse = JSONObject(response)
@@ -348,6 +378,8 @@ suspend fun buscarFilme(nomeFilme: String): Map<String, String>? {
                     val descricao = primeiroFilme.getString("overview")
                     val capaUrl = primeiroFilme.getString("poster_path")
 
+                    android.util.Log.d("API_FILME", "Dados do filme encontrado: Título = $titulo, Descrição = $descricao, Capa = $capaUrl")
+
                     // Retorna os dados como um Map
                     mapOf(
                         "titulo" to titulo,
@@ -355,13 +387,24 @@ suspend fun buscarFilme(nomeFilme: String): Map<String, String>? {
                         "capaUrl" to "https://image.tmdb.org/t/p/w500$capaUrl"
                     )
                 } else {
+                    android.util.Log.d("API_FILME", "Nenhum filme encontrado para o termo: $nomeFilme")
                     null
                 }
             } else {
+                android.util.Log.e("API_FILME", "Erro na conexão. Código de resposta: ${connection.responseCode}")
                 null
             }
+        } catch (e: MalformedURLException) {
+            android.util.Log.e("API_FILME", "URL malformada: ${e.message}")
+            null
+        } catch (e: IOException) {
+            android.util.Log.e("API_FILME", "Erro de I/O: ${e.message}")
+            null
+        } catch (e: JSONException) {
+            android.util.Log.e("API_FILME", "Erro ao processar JSON: ${e.message}")
+            null
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e("API_FILME", "Erro inesperado: ${e.message}")
             null
         }
     }
